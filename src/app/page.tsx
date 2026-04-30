@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Search, Activity, GitCompare, ChevronRight, AlertTriangle, CheckCircle, ShieldAlert, BarChart3, Globe } from 'lucide-react';
-import { cn } from './lib/utils';
+import { cn } from '@/src/lib/utils';
 import { motion } from 'motion/react';
 
 // --- Type Definitions ---
@@ -394,14 +396,14 @@ function SeoReport({ data, url, compact = false }: { data: SeoData, url: string,
     <div className={cn("space-y-6", compact ? "" : "max-w-4xl mx-auto")}>
       {/* Title & Score Card */}
       <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center gap-6">
-        <div className={cn("flex-shrink-0 w-32 h-32 rounded-full border-8 flex items-center justify-center flex-col", scoreBorder, scoreBg)}>
-          <span className={cn("text-4xl font-black tracking-tighter", scoreColor)}>{aiAnalysis.score}</span>
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Score</span>
-        </div>
-        <div className="flex-grow space-y-2 text-center sm:text-left">
-          <h2 className="text-xl font-bold truncate text-white" title={url}>{new URL(url).hostname}</h2>
-          <p className="text-slate-400 leading-relaxed text-sm">{aiAnalysis.summary}</p>
-        </div>
+         <div className={cn("flex-shrink-0 w-32 h-32 rounded-full border-8 flex items-center justify-center flex-col", scoreBorder, scoreBg)}>
+           <span className={cn("text-4xl font-black tracking-tighter", scoreColor)}>{aiAnalysis.score}</span>
+           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Score</span>
+         </div>
+         <div className="flex-grow space-y-2 text-center sm:text-left">
+           <h2 className="text-xl font-bold truncate text-white" title={url}>{new URL(url).hostname}</h2>
+           <p className="text-slate-400 leading-relaxed text-sm">{aiAnalysis.summary}</p>
+         </div>
       </div>
 
       {/* Grid for Technicals & Strengths */}
@@ -434,53 +436,53 @@ function SeoReport({ data, url, compact = false }: { data: SeoData, url: string,
         </div>
 
         <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
-          <h3 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2"><CheckCircle size={16} className="text-emerald-400"/> Strengths</h3>
-          <ul className="space-y-3 text-sm">
-            {aiAnalysis.strengths.map((strength, idx) => (
-              <li key={idx} className="flex gap-2 items-start border-b border-slate-800/30 pb-2 last:border-0 last:pb-0">
-                 <CheckCircle size={14} className="text-emerald-500 mt-0.5 flex-shrink-0"/>
-                 <span className="text-slate-300 leading-relaxed text-[13px]">{strength}</span>
-              </li>
-            ))}
-          </ul>
+           <h3 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2"><CheckCircle size={16} className="text-emerald-400"/> Strengths</h3>
+           <ul className="space-y-3 text-sm">
+             {aiAnalysis.strengths.map((strength, idx) => (
+               <li key={idx} className="flex gap-2 items-start border-b border-slate-800/30 pb-2 last:border-0 last:pb-0">
+                  <CheckCircle size={14} className="text-emerald-500 mt-0.5 flex-shrink-0"/>
+                  <span className="text-slate-300 leading-relaxed text-[13px]">{strength}</span>
+               </li>
+             ))}
+           </ul>
         </div>
       </div>
 
       {/* Errors & Solutions */}
       <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xs uppercase tracking-widest text-slate-500 font-bold flex items-center gap-2">
-            <ShieldAlert size={16} className="text-rose-500"/> SEO Errors & Fixes
-          </h3>
-          {aiAnalysis.errors.length > 0 && <span className="px-2 py-1 bg-rose-500/10 text-rose-500 text-[10px] rounded-full font-bold">{aiAnalysis.errors.length < 10 ? `0${aiAnalysis.errors.length}` : aiAnalysis.errors.length} FOUND</span>}
+           <h3 className="text-xs uppercase tracking-widest text-slate-500 font-bold flex items-center gap-2">
+             <ShieldAlert size={16} className="text-rose-500"/> SEO Errors & Fixes
+           </h3>
+           {aiAnalysis.errors.length > 0 && <span className="px-2 py-1 bg-rose-500/10 text-rose-500 text-[10px] rounded-full font-bold">{aiAnalysis.errors.length < 10 ? `0${aiAnalysis.errors.length}` : aiAnalysis.errors.length} FOUND</span>}
         </div>
         
         {aiAnalysis.errors.length === 0 ? (
-          <p className="text-emerald-400 text-sm font-medium p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">Bohot badhiya! Koi badi error nahi mili.</p>
+           <p className="text-emerald-400 text-sm font-medium p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">Bohot badhiya! Koi badi error nahi mili.</p>
         ) : (
-          <ul className="space-y-3 mt-4">
-            {aiAnalysis.errors.map((err, idx) => (
-              <li key={idx} className={cn(
-                "flex items-start gap-4 p-4 rounded-xl border",
-                err.impact === 'High' ? "bg-rose-500/5 border-rose-500/10" : err.impact === 'Medium' ? "bg-amber-500/5 border-amber-500/10" : "bg-indigo-500/5 border-indigo-500/10"
-              )}>
-                <div className={cn("mt-1 font-mono text-xs font-bold shrink-0", 
-                  err.impact === 'High' ? "text-rose-500" : err.impact === 'Medium' ? "text-amber-500" : "text-indigo-400"
-                )}>
-                  {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
-                </div>
-                <div className="w-full">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-bold text-white">{err.issue}</p>
-                  </div>
-                  <div className="mt-3 p-3 bg-black/40 border border-slate-800 rounded-lg">
-                    <strong className={cn("block text-[10px] uppercase font-bold mb-1 tracking-widest", err.impact === 'High' ? "text-rose-400" : err.impact === 'Medium' ? "text-amber-400" : "text-indigo-400")}>Fix Solution:</strong>
-                    <span className="text-[12px] text-slate-300 leading-relaxed">{err.solution}</span>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+           <ul className="space-y-3 mt-4">
+             {aiAnalysis.errors.map((err, idx) => (
+               <li key={idx} className={cn(
+                 "flex items-start gap-4 p-4 rounded-xl border",
+                 err.impact === 'High' ? "bg-rose-500/5 border-rose-500/10" : err.impact === 'Medium' ? "bg-amber-500/5 border-amber-500/10" : "bg-indigo-500/5 border-indigo-500/10"
+               )}>
+                 <div className={cn("mt-1 font-mono text-xs font-bold shrink-0", 
+                   err.impact === 'High' ? "text-rose-500" : err.impact === 'Medium' ? "text-amber-500" : "text-indigo-400"
+                 )}>
+                   {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                 </div>
+                 <div className="w-full">
+                   <div className="flex items-center gap-2 mb-1">
+                     <p className="text-sm font-bold text-white">{err.issue}</p>
+                   </div>
+                   <div className="mt-3 p-3 bg-black/40 border border-slate-800 rounded-lg">
+                     <strong className={cn("block text-[10px] uppercase font-bold mb-1 tracking-widest", err.impact === 'High' ? "text-rose-400" : err.impact === 'Medium' ? "text-amber-400" : "text-indigo-400")}>Fix Solution:</strong>
+                     <span className="text-[12px] text-slate-300 leading-relaxed">{err.solution}</span>
+                   </div>
+                 </div>
+               </li>
+             ))}
+           </ul>
         )}
       </div>
     </div>

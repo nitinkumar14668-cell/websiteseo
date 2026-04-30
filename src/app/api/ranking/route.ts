@@ -1,15 +1,20 @@
-import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
+import { NextResponse } from "next/server";
+import { GoogleGenAI } from "@google/genai";
 
 export async function POST(req: Request) {
   try {
     const { url, keyword } = await req.json();
     if (!url || !keyword) {
-      return NextResponse.json({ error: 'URL and keyword are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "URL and keyword are required" },
+        { status: 400 },
+      );
     }
 
-    const ai = new GoogleGenAI(process.env.GEMINI_API_KEY ? { apiKey: process.env.GEMINI_API_KEY } : {});
-    
+    const ai = new GoogleGenAI(
+      process.env.GEMINI_API_KEY ? { apiKey: process.env.GEMINI_API_KEY } : {},
+    );
+
     const prompt = `
       Check the estimated SEO ranking for the website: ${url}
       For the keyword: "${keyword}"
@@ -27,27 +32,26 @@ export async function POST(req: Request) {
     `;
 
     const aiResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
-        tools: [{ googleSearch: {} }]
-      }
+        tools: [{ googleSearch: {} }],
+      },
     });
 
     const aiDataText = aiResponse.text;
     if (!aiDataText) {
-        throw new Error("No response from AI");
+      throw new Error("No response from AI");
     }
-    
+
     const analysisData = JSON.parse(aiDataText);
     return NextResponse.json(analysisData);
-
   } catch (error: any) {
-    console.error('Ranking analysis error:', error);
-    let errorMsg = 'Failed to fetch ranking';
-    if (error?.message?.includes('API key not valid')) {
-        errorMsg = 'API key not valid. Please configure a valid Gemini API Key.';
+    console.error("Ranking analysis error:", error);
+    let errorMsg = "Failed to fetch ranking";
+    if (error?.message?.includes("API key not valid")) {
+      errorMsg = "API key not valid. Please configure a valid Gemini API Key.";
     }
     return NextResponse.json({ error: errorMsg }, { status: 500 });
   }

@@ -29,13 +29,23 @@ type SeoData = {
   };
 };
 
+type RankingData = {
+  rank: string;
+  estimatedTraffic: string;
+  difficulty: "High" | "Medium" | "Low";
+  competitors: string[];
+  summary: string;
+};
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'analyze' | 'compare'>('analyze');
+  const [activeTab, setActiveTab] = useState<'analyze' | 'compare' | 'ranking'>('analyze');
   const [url, setUrl] = useState('');
   const [url2, setUrl2] = useState('');
+  const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<SeoData | null>(null);
   const [data2, setData2] = useState<SeoData | null>(null);
+  const [rankingData, setRankingData] = useState<RankingData | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleAnalyze = async (e: React.FormEvent) => {
@@ -100,6 +110,31 @@ export default function App() {
     }
   };
 
+  const handleRanking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url || !keyword) return;
+    setLoading(true);
+    setErrorMsg('');
+    setRankingData(null);
+    try {
+      const res = await fetch('/api/ranking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, keyword }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setRankingData(result);
+      } else {
+        setErrorMsg(result.error || 'Failed to fetch ranking.');
+      }
+    } catch (err: any) {
+      setErrorMsg('Network error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-slate-200 font-sans">
       {/* Header */}
@@ -113,7 +148,7 @@ export default function App() {
           </div>
           <nav className="flex items-center gap-8 text-sm font-medium text-slate-400">
             <button
-              onClick={() => { setActiveTab('analyze'); setData(null); setData2(null); setErrorMsg(''); }}
+              onClick={() => { setActiveTab('analyze'); setData(null); setData2(null); setRankingData(null); setErrorMsg(''); }}
               className={cn(
                 "pb-1 transition-colors border-b-2 text-sm font-bold tracking-wide",
                 activeTab === 'analyze' ? "text-indigo-400 border-indigo-400" : "border-transparent hover:text-white text-slate-400"
@@ -122,13 +157,22 @@ export default function App() {
               Analyzer
             </button>
             <button
-              onClick={() => { setActiveTab('compare'); setData(null); setData2(null); setErrorMsg(''); }}
+              onClick={() => { setActiveTab('compare'); setData(null); setData2(null); setRankingData(null); setErrorMsg(''); }}
               className={cn(
                 "pb-1 transition-colors border-b-2 text-sm font-bold tracking-wide",
                 activeTab === 'compare' ? "text-indigo-400 border-indigo-400" : "border-transparent hover:text-white text-slate-400"
               )}
             >
               1v1 Compare
+            </button>
+            <button
+              onClick={() => { setActiveTab('ranking'); setData(null); setData2(null); setRankingData(null); setErrorMsg(''); }}
+              className={cn(
+                "pb-1 transition-colors border-b-2 text-sm font-bold tracking-wide",
+                activeTab === 'ranking' ? "text-indigo-400 border-indigo-400" : "border-transparent hover:text-white text-slate-400"
+              )}
+            >
+              Keyword Ranker
             </button>
           </nav>
         </div>
@@ -138,12 +182,14 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold tracking-tight mb-4 text-white">
-            {activeTab === 'analyze' ? 'Website ka Live SEO Score Check Karein' : 'Donon Websites ko Compare Karein'}
+            {activeTab === 'analyze' && 'Website ka Live SEO Score Check Karein'}
+            {activeTab === 'compare' && 'Donon Websites ko Compare Karein'}
+            {activeTab === 'ranking' && 'Keyword Ranking Check Karein'}
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            {activeTab === 'analyze' 
-              ? 'AI powered tool se apne website ke SEO errors dhundhein aur free me fix karne ka solution paayein.'
-              : 'Dono competitors ki SEO performance evaluate karein aur dekhen kaun aage hai.'}
+            {activeTab === 'analyze' && 'AI powered tool se apne website ke SEO errors dhundhein aur free me fix karne ka solution paayein.'}
+            {activeTab === 'compare' && 'Dono competitors ki SEO performance evaluate karein aur dekhen kaun aage hai.'}
+            {activeTab === 'ranking' && 'Check karein ki aapka website kisi specific keyword ke liye kaisa rank kar raha hai.'}
           </p>
         </div>
 
@@ -174,7 +220,7 @@ export default function App() {
                 )}
               </button>
             </form>
-          ) : (
+          ) : activeTab === 'compare' ? (
             <form onSubmit={handleCompare} className="flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-grow">
@@ -213,6 +259,42 @@ export default function App() {
                 )}
               </button>
             </form>
+          ) : (
+            <form onSubmit={handleRanking} className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-grow">
+                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+                <input
+                  type="url"
+                  placeholder="Website URL"
+                  className="w-full pl-12 pr-4 py-3 bg-black border border-slate-700 rounded-xl text-sm text-indigo-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="relative flex-grow">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+                <input
+                  type="text"
+                  placeholder="Target Keyword"
+                  className="w-full pl-12 pr-4 py-3 bg-black border border-slate-700 rounded-xl text-sm text-indigo-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 text-white px-8 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>Check Rank <ChevronRight size={16} /></>
+                )}
+              </button>
+            </form>
           )}
         </div>
 
@@ -235,6 +317,54 @@ export default function App() {
             <div className="absolute left-1/2 top-0 bottom-0 w-px bg-slate-800 hidden md:block -translate-x-1/2" />
             <SeoReport data={data} url={url} compact />
             <SeoReport data={data2} url={url2} compact />
+          </motion.div>
+        )}
+
+        {activeTab === 'ranking' && rankingData && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto space-y-6">
+            <div className="bg-slate-900/50 p-8 rounded-2xl border border-slate-800 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-indigo-400"></div>
+              
+              <h2 className="text-xl font-bold truncate text-white mb-1" title={url}>{new URL(url).hostname}</h2>
+              <div className="inline-flex items-center gap-2 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 mb-8">
+                <Search size={14} className="text-indigo-400" />
+                <span className="text-sm text-indigo-300 font-medium">"{keyword}"</span>
+              </div>
+              
+              <div className="flex flex-col items-center justify-center mb-8 relative">
+                <div className="w-32 h-32 rounded-full border-8 border-indigo-500/20 bg-indigo-500/5 flex items-center justify-center flex-col">
+                  <span className="text-5xl font-black text-indigo-400">#{rankingData.rank}</span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-4">Estimated Rank</span>
+              </div>
+              
+              <p className="text-slate-300 text-sm leading-relaxed max-w-md mx-auto bg-black/40 p-4 rounded-xl border border-slate-800 mb-6">
+                {rankingData.summary}
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 text-left">
+                <div className="bg-black/40 p-4 rounded-xl border border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Difficulty</span>
+                  <span className={cn("text-lg font-bold", rankingData.difficulty === 'High' ? "text-rose-400" : rankingData.difficulty === 'Medium' ? "text-amber-400" : "text-emerald-400")}>{rankingData.difficulty}</span>
+                </div>
+                <div className="bg-black/40 p-4 rounded-xl border border-slate-800 flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Est. Traffic</span>
+                  <span className="text-lg font-bold text-slate-200">{rankingData.estimatedTraffic}</span>
+                </div>
+              </div>
+
+              <div className="mt-4 bg-black/40 p-4 rounded-xl border border-slate-800 text-left">
+                 <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Top Competitors</span>
+                 <ul className="space-y-2">
+                   {rankingData.competitors.map((comp, idx) => (
+                     <li key={idx} className="flex gap-2 items-center text-sm">
+                       <span className="text-xs font-mono text-slate-500">{(idx + 1).toString().padStart(2, '0')}</span>
+                       <span className="text-slate-300 truncate">{comp}</span>
+                     </li>
+                   ))}
+                 </ul>
+              </div>
+            </div>
           </motion.div>
         )}
       </main>
